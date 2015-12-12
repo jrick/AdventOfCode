@@ -13,11 +13,15 @@ let doHash md5 key nonce =
     let input = Array.append key nonceBytes
     MD5.hash md5 input
 
-let isAnswer (arr : byte array) =
+let has5Zeros (arr : byte array) =
     let sum = int arr.[0] + int arr.[1] + int (arr.[2] >>> 4)
     sum = 0
 
-let challenge1 key =
+let has6Zeros (arr : byte array) =
+    let sum = int arr.[0] + int arr.[1] + int arr.[2]
+    sum = 0
+
+let challenge isAnswer key =
     use md5 = MD5.Create()
     let nonces = Seq.initInfinite (fun i -> i)
     let answer, _ =
@@ -26,8 +30,13 @@ let challenge1 key =
         |> Seq.find (fun (nonce, hash) -> isAnswer hash)
     answer
 
+let challenge1 key = challenge has5Zeros key
+
+let challenge2 key = challenge has6Zeros key
+
 [<EntryPoint>]
 let main args =
     let key = Encoding.UTF8.GetBytes(Input.key)
-    challenge1 key |> printfn "Smallest answer is %d"
+    challenge1 key |> printfn "Smallest 5-zero answer is %d"
+    challenge2 key |> printfn "Smallest 6-zero answer is %d"
     0
