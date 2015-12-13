@@ -94,7 +94,7 @@ module Input =
 
 [<EntryPoint>]
 let main args =
-    let input = Input.readInput
+    let input = Input.readInput |> Seq.toList
     Challenge1.challenge1 input |> printfn "There are %d lights lit"
     Challenge2.challenge2 input |> printfn "Total brightness is %d"
     0
