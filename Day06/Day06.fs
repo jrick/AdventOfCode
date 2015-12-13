@@ -14,8 +14,8 @@ type Point = int * int
 type Rectangle = { Corners : Point * Point }
 with
     member r.Indexes =
-        let (p1,p2),(q1,q2) = r.Corners
-        seq { for p in p1 .. q1 do for q in p2 .. q2 do yield p, q }
+        let (px,py),(qx,qy) = r.Corners
+        seq { for x in px .. qx do for y in py .. qy do yield x, y }
 
 type Grid = { Array : bool [,] }
 with
@@ -47,10 +47,10 @@ module Parse =
 module Input =
     let readPoint (s : string) =
         match s.Split(',') with
-        | [| p1; p2 |] ->
-            match Parse.int p1, Parse.int p2 with
-            | Some p1, Some p2 when 0 <= p1 && p1 < 1000 && 0 <= p2 && p2 < 1000 ->
-                Some (p1, p2)
+        | [| x; y |] ->
+            match Parse.int x, Parse.int y with
+            | Some x, Some y when 0 <= x && x < 1000 && 0 <= y && y < 1000 ->
+                Some (x, y)
             | _ -> None
         | _ -> None
 
