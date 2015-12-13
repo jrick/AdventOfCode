@@ -28,14 +28,12 @@ with
 
 type Instruction = { Op : Opcode; Rect : Rectangle }
 
-let private execute grid instr =
-    let arr = grid.Array
-    Seq.iter (fun (i,j) -> arr.[i,j] <- instr.Op.Transform arr.[i,j]) instr.Rect.Indexes
-    { Array = arr }
-
 let challenge1 input =
-    let finalGrid = input |> Seq.fold (fun g instr -> execute g instr) Grid.Start
-    finalGrid.CountSet
+    let grid = Grid.Start
+    for instr in input do
+        for (i,j) in instr.Rect.Indexes do
+            grid.Array.[i,j] <- instr.Op.Transform grid.Array.[i,j]
+    grid.CountSet
 
 module Parse =
     let tryParse parse = parse >> function
