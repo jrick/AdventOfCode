@@ -45,6 +45,42 @@ module Challenge1 =
         |> Seq.filter (fun s -> niceString None Requirements.Initial s)
         |> Seq.length
 
+module Challenge2 =
+    let removeOverlappingPairs (s : string) =
+        seq {
+            let mutable prevPair = None
+            for pair in s |> Seq.pairwise do
+                match prevPair with
+                | Some pp ->
+                    if pp = pair then prevPair <- None
+                    else
+                        yield pair
+                        prevPair <- Some pair
+                | None ->
+                    yield pair
+                    prevPair <- Some pair
+        }
+
+    let hasNonOverlappingPair (s : string) =
+        let noOverlaps = s |> removeOverlappingPairs |> Seq.toList
+        let unique = Seq.distinct noOverlaps
+        List.length noOverlaps > Seq.length unique
+
+    let isOutsideRepeat = function
+        | [| a; _; b |] -> a = b
+        | _ -> false
+
+    let hasOutsideRepeat s =
+        s |> Seq.windowed 3 |> Seq.exists isOutsideRepeat
+
+    let isNice s =
+        hasNonOverlappingPair s && hasOutsideRepeat s
+
+    let challenge2 input =
+        input
+        |> Seq.filter isNice
+        |> Seq.length
+
 module Input =
     let allStrings =
         seq { use r = new StreamReader("input.txt")
@@ -53,5 +89,6 @@ module Input =
 [<EntryPoint>]
 let main args =
     let input = Input.allStrings
-    Challenge1.challenge1 input |> printfn "There are %d nice strings"
+    Challenge1.challenge1 input |> printfn "There are %d nice strings using the original requirements"
+    Challenge2.challenge2 input |> printfn "There are %d nice strings using the revised requirements"
     0
