@@ -3,11 +3,16 @@ open System.IO
 
 type Opcode = TurnOn | TurnOff | Toggle
 with
-    member op.Transform =
+    member op.Lightswitch =
         match op with
         | TurnOn -> (fun _ -> true)
         | TurnOff -> (fun _ -> false)
         | Toggle -> (fun b -> not b)
+    member op.DimBrighten =
+        match op with
+        | TurnOn -> (fun b -> b + 1)
+        | TurnOff -> (fun b -> max 0 (b - 1))
+        | Toggle -> (fun b -> b + 2)
 
 type Point = int * int
 
@@ -17,23 +22,41 @@ with
         let (px,py),(qx,qy) = r.Corners
         seq { for x in px .. qx do for y in py .. qy do yield x, y }
 
-type Grid = { Array : bool [,] }
-with
-    static member Start =
-        { Array = Array2D.init 1000 1000 (fun _ _ -> false) }
-    member g.CountSet =
-        let mutable count = 0
-        Array2D.iter (fun item -> if item then count <- count + 1) g.Array
-        count
-
 type Instruction = { Op : Opcode; Rect : Rectangle }
 
-let challenge1 input =
-    let grid = Grid.Start
-    for instr in input do
-        for (i,j) in instr.Rect.Indexes do
-            grid.Array.[i,j] <- instr.Op.Transform grid.Array.[i,j]
-    grid.CountSet
+module Challenge1 =
+    type Grid = { Array : bool [,] }
+    with
+        static member Start =
+            { Array = Array2D.init 1000 1000 (fun _ _ -> false) }
+        member g.CountSet =
+            let mutable count = 0
+            Array2D.iter (fun item -> if item then count <- count + 1) g.Array
+            count
+
+    let challenge1 input =
+        let grid = Grid.Start
+        for instr in input do
+            for (i,j) in instr.Rect.Indexes do
+                grid.Array.[i,j] <- instr.Op.Lightswitch grid.Array.[i,j]
+        grid.CountSet
+
+module Challenge2 =
+    type Grid = { Array : int [,] }
+    with
+        static member Start =
+            { Array = Array2D.init 1000 1000 (fun _ _ -> 0) }
+        member g.Brightness =
+            let mutable brightness = 0
+            Array2D.iter (fun item -> brightness <- brightness + item) g.Array
+            brightness
+
+    let challenge2 input =
+        let grid = Grid.Start
+        for instr in input do
+            for (i,j) in instr.Rect.Indexes do
+                grid.Array.[i,j] <- instr.Op.DimBrighten grid.Array.[i,j]
+        grid.Brightness
 
 module Parse =
     let tryParse parse = parse >> function
@@ -72,5 +95,6 @@ module Input =
 [<EntryPoint>]
 let main args =
     let input = Input.readInput
-    challenge1 input |> printfn "There are %d lights lit"
+    Challenge1.challenge1 input |> printfn "There are %d lights lit"
+    Challenge2.challenge2 input |> printfn "Total brightness is %d"
     0
